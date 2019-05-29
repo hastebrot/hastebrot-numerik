@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>Projekt 3: Numerische Integration</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link type="text/css" href="css/smoothness/jquery-ui.custom.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery.flot.dev.js"></script>
+    <script type="text/javascript" src="project2_diff.js"></script>
+    <script type="text/javascript" src="project3_integ.js"></script>
+    <style type="text/css">
+      .ui-slider-horizontal {
+        height: 0.5em;
+      }
+      .ui-slider-handle {
+        height: 0.9em !important;
+      }
+    </style>
+    <script id="source" type="text/javascript">
+      $(function() {
+        $("#slider").slider({
+          value: 20,
+          min: 2,
+          max: 150,
+          step: 1,
+          slide: function(event, ui) {
+            $("#amount").val(ui.value);
+            plotGraph(ui.value);
+          }
+        });
+        $("#amount").val($("#slider").slider("value"));
+        
+        function plotGraph(numOfDiskretX) {
+          //var numOfX = 100;
+          var startX = 0.0;
+          var stopX = Math.PI;
+          
+          var listOriginalX = populateListX(startX, stopX, 100);
+          var listOriginalY = populateListY(listOriginalX, exampleFunction2);
+          
+          var listDiskretX = populateListX(startX, stopX, numOfDiskretX);
+          var listDiskretY = populateListY(listDiskretX, exampleFunction2);
+          
+          //console.log(listX.slice(0, 1));
+          //console.log(listX.slice(-1));
+          //console.log(listX);
+          
+          var fxOriginal = zipLists(listOriginalX, listOriginalY);
+          var fxDiskret = zipLists(listDiskretX, listDiskretY);
+          
+          console.log(fxDiskret);
+          
+          $.plot($("#placeholder"), [
+            { data: fxDiskret, lines: { show: true, fill: false, stripes: true } },
+            { data: fxOriginal, lines: { show: true } }
+            //{ data: fxDiskret, bars: { show: true, barWidth: (stopX - startX) / numOfDiskretX } }
+          ], {
+            series: {
+              points: { show: false }
+            },
+            xaxis: { min: 0 - 0.5, max: Math.PI + 0.5 },
+            yaxis: { min: -4, max: 10 },
+            grid: {
+              hoverable: true,
+              backgroundColor: { colors: ["#fff", "#eee"] }
+            }
+          });
+        }
+        
+        plotGraph($("#slider").slider("value"));
+        
+        function showTooltip(x, y, contents) {
+          $("#tooltip").remove();
+          $('<div id="tooltip">' + contents + '</div>').css({
+            position: "absolute",
+            display: "none",
+            top: y - 35,
+            left: x + 10,
+            border: "1px solid #fdd",
+            padding: "2px",
+            "background-color": "#fee",
+            opacity: 0.80
+          }).appendTo("body").fadeIn(200);
+        }
+        
+        var previousPoint = null;
+        $("#placeholder").bind("plothover", function(event, pos, item) {
+          $("#x").text(pos.x.toFixed(2));
+          $("#y").text(pos.y.toFixed(2));
+
+          if (item) {
+            if (previousPoint != item.datapoint) {
+              previousPoint = item.datapoint;
+
+              var x = item.datapoint[0].toFixed(2),
+                  y = item.datapoint[1].toFixed(2);
+              showTooltip(item.pageX, item.pageY, 
+                item.series.label + " of " + x + " = " + y);
+            }
+          }
+          else {
+            $("#tooltip").remove();
+            previousPoint = null;            
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Projekt 3: Numerische Integration</h1>
+    <p>
+      <label for="amount">Anzahl der Knoten:</label>
+      <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+    </p>
+    <div id="slider" style="width: 600px; margin-bottom: 15px;"></div>
+    <div id="placeholder" style="width: 600px; height: 300px;"></div>
+  </body>
+</html>

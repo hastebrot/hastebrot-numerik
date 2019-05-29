@@ -1,0 +1,14 @@
+jquery-1.4.2
+http://jquery.com/
+
+jqueryui-1.8.4
+http://jqueryui.com/
+
+flot-0.6
+http://code.google.com/p/flot/
+
+qunit-?
+http://github.com/jquery/qunit
+
+specit-0ab6fbe
+http://github.com/joshuaclayton/specit

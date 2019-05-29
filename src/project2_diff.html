@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>Projekt 2: Numerische Differentiation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link type="text/css" href="css/smoothness/jquery-ui.custom.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery.flot.min.js"></script>
+    <script type="text/javascript" src="project2_diff.js"></script>
+    <style type="text/css">
+      .ui-slider-horizontal {
+        height: 0.5em;
+      }
+      .ui-slider-handle {
+        height: 0.9em !important;
+      }
+    </style>
+    <script id="source" type="text/javascript">
+      $(function() {
+        $("#slider").slider({
+          value: 100,
+          min: 10,
+          max: 150,
+          step: 2,
+          slide: function(event, ui) {
+            $("#amount").val(ui.value);
+            plotGraph(ui.value);
+          }
+        });
+        $("#amount").val($("#slider").slider("value"));
+        
+        function plotGraph(numOfX) {
+          //var numOfX = 100;
+          var startX = -3.0 * Math.PI;
+          var stopX = 3.0 * Math.PI;
+          
+          var listX = populateListX(startX, stopX, numOfX);
+          var listY = populateListY(listX, exampleFunction1);
+          var listDiffY = differentiateListY(listY, startX, stopX, numOfX);
+          var listDiffY2 = differentiateListY(listDiffY, startX, stopX, numOfX);
+          
+          //console.log(listX.slice(0, 1));
+          //console.log(listX.slice(-1));
+          //console.log(listX);
+          //console.log(listDiffY);
+          
+          //console.log(zipLists(listX, listY));
+          
+          var fx = zipLists(listX, listY);
+          var fx1 = zipLists(listX, listDiffY);
+          var fx2 = zipLists(listX, listDiffY2);
+          
+          $.plot($("#placeholder"), [
+            { label: "f(x)", data: fx },
+            { label: "f'(x)", data: fx1 },
+            { label: "f''(x)", data: fx2 },
+          ], {
+            series: {
+              lines: { show: true },
+              points: { show: false }
+            },
+            xaxis: {
+              ticks: [[startX, "-3\u03c0"], 0, [stopX, "3\u03c0"]]
+            },
+            yaxis: {min: -3000, max: 3000},
+            grid: {
+              hoverable: true,
+              backgroundColor: { colors: ["#fff", "#eee"] }
+            }
+          });
+        }
+        
+        plotGraph(100);
+        
+        function showTooltip(x, y, contents) {
+          $("#tooltip").remove();
+          $('<div id="tooltip">' + contents + '</div>').css({
+            position: "absolute",
+            display: "none",
+            top: y - 35,
+            left: x + 10,
+            border: "1px solid #fdd",
+            padding: "2px",
+            "background-color": "#fee",
+            opacity: 0.80
+          }).appendTo("body").fadeIn(200);
+        }
+        
+        var previousPoint = null;
+        $("#placeholder").bind("plothover", function(event, pos, item) {
+          $("#x").text(pos.x.toFixed(2));
+          $("#y").text(pos.y.toFixed(2));
+
+          if (item) {
+            if (previousPoint != item.datapoint) {
+              previousPoint = item.datapoint;
+
+              var x = item.datapoint[0].toFixed(2),
+                  y = item.datapoint[1].toFixed(2);
+              showTooltip(item.pageX, item.pageY, 
+                item.series.label + " of " + x + " = " + y);
+            }
+          }
+          else {
+            $("#tooltip").remove();
+            previousPoint = null;            
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Projekt 2: Numerische Differentiation</h1>
+    <p>
+      <label for="amount">Anzahl der Knoten:</label>
+      <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+    </p>
+    <div id="slider" style="width: 600px; margin-bottom: 15px;"></div>
+    <div id="placeholder" style="width: 600px; height: 300px;"></div>
+  </body>
+</html>
